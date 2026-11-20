@@ -85,7 +85,7 @@
   var categories = ["Todos", "Tartas", "Cakes", "Colección Signature", "Cheesecakes", "Dulces Artesanos", "Brunch", "Cafés", "Helados Gloria", "Packs"];
   var FEATURED_IDS = [20, 2, 21, 35, 41, 100, 6, 7];
   var currentFilter = "Todos";
-  var orderState = { productId: null, mode: "config" };
+  var orderState = { productId: null, mode: null, ready: false };
 
   var cakeTypes = [
     { id: "matilda", label: "Matilda", frost: "matilda", photo: PHOTO.choco, priceHint: "Desde 4,90€ / 28,90€", desc: "Chocolate intenso" },
@@ -367,12 +367,20 @@
     var q = document.getElementById("order-qty"); if (q) q.value = "1";
   }
   function startOrderFromProduct(p) {
-    orderState = { productId: p.id, mode: "catalog" }; clearOrderForm(); showPage("contacto");
+    if (!p || !p.id) return;
+    orderState = { productId: p.id, mode: "catalog", ready: true };
+    clearOrderForm();
+    clearFieldErrors();
+    showPage("contacto");
     setTimeout(function () {
       var n = document.getElementById("order-product-name");
-      if (n) n.textContent = p.name + " · " + (p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price);
+      var displayPrice = p.price === "0,00€" || p.price === "0€" || !p.price || p.price === "Consultar" ? "Consultar precio" : p.price;
+      if (n) n.textContent = p.name + " · " + displayPrice;
       var i = document.getElementById("order-product-img");
-      if (i) { if (p.img) { i.src = p.img; i.style.display = "block"; } else i.style.display = "none"; }
+      if (i) {
+        if (p.img) { i.src = p.img; i.style.display = "block"; }
+        else i.style.display = "none";
+      }
       document.getElementById("order-form-block").scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
   }
@@ -382,7 +390,9 @@
     cakeState.time = ((document.getElementById("cake-time") || {}).value || "").trim();
     cakeState.notes = ((document.getElementById("cake-notes") || {}).value || "").trim();
     cakeState.candles = !!(document.getElementById("cake-candles") || {}).checked;
-    orderState = { productId: null, mode: "config" }; clearOrderForm();
+    orderState = { productId: null, mode: "config", ready: true };
+    clearOrderForm();
+    clearFieldErrors();
     var tipo = cakeTypes.find(function (t) { return t.id === cakeState.tipo; });
     var size = cakeSizes.find(function (s) { return s.id === cakeState.size; });
     showPage("contacto");
@@ -390,7 +400,10 @@
       var n = document.getElementById("order-product-name");
       if (n) n.textContent = (tipo ? tipo.label : "Tarta") + " · " + (size ? size.label : "") + " · " + (tipo && tipo.priceHint ? tipo.priceHint : "Presupuesto pendiente de confirmar");
       var i = document.getElementById("order-product-img");
-      if (i) { if (tipo && tipo.photo) { i.src = tipo.photo; i.style.display = "block"; } else { i.src = PHOTO.pasteleria || PHOTO.choco; i.style.display = "block"; } }
+      if (i) {
+        if (tipo && tipo.photo) { i.src = tipo.photo; i.style.display = "block"; }
+        else { i.src = PHOTO.pasteleria || PHOTO.choco; i.style.display = "block"; }
+      }
       var od = document.getElementById("order-date"); if (od && cakeState.date) od.value = cakeState.date;
       var ot = document.getElementById("order-time"); if (ot && cakeState.time) ot.value = cakeState.time;
       var on = document.getElementById("order-notes"); if (on && cakeState.notes) on.value = cakeState.notes;
@@ -406,7 +419,7 @@
     var notes = ((document.getElementById("order-notes") || {}).value || "").trim();
     var productLabel = ((document.getElementById("order-product-name") || {}).textContent || "—").trim();
     var lines = ["SOLICITUD DE ENCARGO — DULCE GLORIA", "", "DATOS DEL CLIENTE", "Nombre: " + (name || "—"), "Teléfono: " + (phone || "—"), "", "PRODUCTO", "Detalle: " + productLabel, "Cantidad: " + qty];
-    if (orderState.mode === "config") {
+    if (orderState.mode === "config" && orderState.ready) {
       var tipo = cakeTypes.find(function (t) { return t.id === cakeState.tipo; });
       var size = cakeSizes.find(function (s) { return s.id === cakeState.size; });
       lines.push("Tarta: " + (tipo ? tipo.label : "—"));
@@ -421,31 +434,80 @@
     if (imgEl && imgEl.src && imgEl.style.display !== "none") { lines.push("", "IMAGEN DE REFERENCIA:", imgEl.src); }
     return lines.join("\n");
   }
+  function clearFieldErrors() {
+    ["order-name", "order-phone", "order-date", "order-time", "order-qty"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) { el.removeAttribute("aria-invalid"); el.classList.remove("field-error"); }
+      var err = document.getElementById(id + "-error");
+      if (err) err.textContent = "";
+    });
+    var pe = document.getElementById("order-product-error");
+    if (pe) pe.textContent = "";
+  }
+  function setFieldError(id, msg) {
+    var el = document.getElementById(id);
+    if (el) { el.setAttribute("aria-invalid", "true"); el.classList.add("field-error"); try { el.focus(); } catch (e) {} }
+    var err = document.getElementById(id + "-error");
+    if (err) err.textContent = msg;
+  }
+  function hasValidProductSelection() {
+    if (!orderState || !orderState.ready) return false;
+    if (orderState.mode === "catalog" && orderState.productId) return true;
+    if (orderState.mode === "config") {
+      var tipo = cakeTypes.find(function (t) { return t.id === cakeState.tipo; });
+      return !!(tipo && cakeState.tipo);
+    }
+    return false;
+  }
   function validateOrder() {
+    clearFieldErrors();
+    var ok = true;
+    if (!hasValidProductSelection()) {
+      var pe = document.getElementById("order-product-error");
+      if (pe) pe.textContent = "Selecciona primero un producto en la carta o configura una tarta.";
+      else alert("Selecciona primero un producto en la carta o configura una tarta.");
+      ok = false;
+    }
     var name = ((document.getElementById("order-name") || {}).value || "").trim();
     var phone = ((document.getElementById("order-phone") || {}).value || "").replace(/\s/g, "");
     var date = ((document.getElementById("order-date") || {}).value || "").trim();
     var time = ((document.getElementById("order-time") || {}).value || "").trim();
     var qty = parseInt(((document.getElementById("order-qty") || {}).value || "1"), 10);
-    if (!name || name.length < 2) { alert("Introduce tu nombre completo."); return false; }
-    if (!phone || phone.length < 9 || !/^\+?\d{9,15}$/.test(phone)) { alert("Introduce un teléfono válido (mín. 9 dígitos)."); return false; }
-    if (!date) { alert("Selecciona una fecha de recogida."); return false; }
-    var now = new Date();
-    var today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-    if (date < today) { alert("La fecha de recogida debe ser hoy o posterior."); return false; }
-    if (!time) { alert("Selecciona una hora de recogida."); return false; }
-    if (!qty || qty < 1) { alert("La cantidad debe ser al menos 1."); return false; }
-    return true;
+    if (!name || name.length < 2) { setFieldError("order-name", "Introduce tu nombre completo."); ok = false; }
+    if (!phone || phone.length < 9 || !/^\+?\d{9,15}$/.test(phone)) { setFieldError("order-phone", "Teléfono válido (mín. 9 dígitos)."); ok = false; }
+    if (!date) { setFieldError("order-date", "Selecciona una fecha de recogida."); ok = false; }
+    else {
+      var now = new Date();
+      var today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+      if (date < today) { setFieldError("order-date", "La fecha debe ser hoy o posterior."); ok = false; }
+    }
+    if (!time) { setFieldError("order-time", "Indica una hora o franja de recogida."); ok = false; }
+    if (!qty || qty < 1 || isNaN(qty)) { setFieldError("order-qty", "La cantidad debe ser al menos 1."); ok = false; }
+    return ok;
   }
+  var orderSubmitLock = false;
   function submitOrderWhatsApp() {
+    if (orderSubmitLock) return;
     if (!validateOrder()) return;
-    var text = buildOrderMessage();
-    var box = document.getElementById("order-summary-text");
-    if (box) { box.textContent = text; box.style.whiteSpace = "pre-wrap"; }
-    var wa = document.getElementById("wa-order-link");
-    if (wa) { wa.href = "https://wa.me/34652020642?text=" + encodeURIComponent(text); wa.rel = "noopener noreferrer"; }
-    document.getElementById("order-summary-modal").classList.add("open");
-    document.body.style.overflow = "hidden";
+    orderSubmitLock = true;
+    try {
+      var text = buildOrderMessage();
+      var box = document.getElementById("order-summary-text");
+      if (box) { box.textContent = text; box.style.whiteSpace = "pre-wrap"; }
+      var wa = document.getElementById("wa-order-link");
+      if (wa) {
+        wa.href = "https://wa.me/34652020642?text=" + encodeURIComponent(text);
+        wa.rel = "noopener noreferrer";
+        wa.target = "_blank";
+      }
+      var modal = document.getElementById("order-summary-modal");
+      if (modal) {
+        modal.classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+    } finally {
+      setTimeout(function () { orderSubmitLock = false; }, 600);
+    }
   }
   function closeOrderSummary(e) {
     if (e && e.target !== document.getElementById("order-summary-modal") && e.type === "click") return;
