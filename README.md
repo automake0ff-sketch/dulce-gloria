@@ -1,21 +1,27 @@
-# Dulce Gloria Sweets & Coffe
+# Dulce Gloria Sweets & Coffe — Microapp premium
 
-Microapp premium + configurador 3D (Three.js).
+https://github.com/automake0ff-sketch/dulce-gloria
 
-**Repo:** https://github.com/automake0ff-sketch/dulce-gloria
+## Fuentes oficiales
+- Web: https://dulcegloria.com/
+- Contacto: 652 02 06 42 · Av. Emilio Lemos 26, Sevilla
+- Carta: https://r.qamarero.com/dulce-gloria
+- Reservas: https://booking.qamarero.com/new-reservation/dulce-gloria
 
 ## Archivos
 - `index.html` — UI, estilos, Three.js CDN
-- `app.js` — carta Qamarero, motor 3D (perfiles por tipo), WhatsApp
+- `app.js` — catálogo, configurador 3D, WhatsApp
 
-## Configurador 3D
-- 9 tipos con apariencia diferenciada (Matilda, Red Velvet, Lotus, Oreo…)
-- Tamaño, cobertura, decoraciones, velas, mensaje en el modelo
-- Rotación 360°, zoom, vista inicial
-- Geometría procedural (sin GLB externos)
+## Fase final (mejoras)
+- Fichas de producto con slot para foto oficial + CTA «Ver producto»
+- WhatsApp seguro (`textContent`, sin innerHTML con datos de usuario)
+- Validación antes de solicitar presupuesto
+- Resumen de encargo claro (pendiente de confirmación)
+- CSS móvil (botones ≥44px, visor 3D adaptado)
+- Motor 3D procedural con perfiles por tipo + dispose
 
-## Datos
-Precios de Qamarero. WhatsApp: 652 02 06 42
+## Demo
+Club y admin son demostrativos. No hay backend ni pagos.
 
 ## GitHub Pages
-Settings → Pages → branch `main` → https://automake0ff-sketch.github.io/dulce-gloria/
+Settings → Pages → branch `main`
