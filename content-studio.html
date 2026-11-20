@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dulce Gloria — Content Studio (offline)</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--cream:#F7F3EB;--olive:#6B7B5A;--brown:#3A2F26;--muted:#6F655A;--paper:#FFFDF8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--cream);color:var(--brown);line-height:1.5;padding:24px}
+h1{font-size:1.5rem;margin-bottom:8px}
+.note{background:#FBF3DC;border-left:3px solid #C4A574;padding:12px;margin:16px 0;font-size:.9rem;color:#6B5520}
+.grid{display:grid;gap:16px;max-width:900px}
+label{display:block;font-size:.8rem;font-weight:600;margin:10px 0 4px;color:var(--muted)}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font:inherit;background:#fff}
+textarea{min-height:100px}
+button{margin-top:12px;padding:12px 18px;border:0;border-radius:999px;background:var(--olive);color:#fff;font-weight:600;cursor:pointer}
+.out{background:var(--paper);border-radius:12px;padding:16px;white-space:pre-wrap;font-size:.9rem;border:1px solid #eee;min-height:120px}
+.muted{font-size:.85rem;color:var(--muted);margin-top:8px}
+a{color:var(--olive)}
+</style>
+</head>
+<body>
+<h1>Dulce Gloria · Content Studio</h1>
+<p class="muted">Herramienta <strong>offline</strong> y separada de la web pública. No publica en Instagram. No usa API keys ni backend.</p>
+<div class="note">
+  Esta versión genera borradores locales a partir de plantillas de marca.
+  La generación con IA externa (API) requiere un backend seguro y aprobación humana antes de publicar.
+  No conecta con Meta/Instagram automáticamente.
+</div>
+<div class="grid">
+  <div>
+    <label for="tipo">Tipo de contenido</label>
+    <select id="tipo">
+      <option value="post">Publicación Instagram</option>
+      <option value="story">Story / idea breve</option>
+      <option value="reel">Idea de Reel (guion)</option>
+    </select>
+    <label for="tema">Tema / producto</label>
+    <input id="tema" placeholder="Ej. Matilda, brunch, café de especialidad">
+    <label for="tono">Tono</label>
+    <select id="tono">
+      <option value="cercano">Cercano y artesanal</option>
+      <option value="elegante">Elegante premium</option>
+      <option value="comercial">Comercial suave</option>
+    </select>
+    <label for="extra">Notas (opcional)</label>
+    <textarea id="extra" placeholder="Detalles que quieras incluir (sin inventar ofertas)"></textarea>
+    <button type="button" onclick="generar()">Generar borrador local</button>
+    <button type="button" style="background:#fff;color:var(--brown);border:1px solid #ccc;margin-left:8px" onclick="copiar()">Copiar</button>
+  </div>
+  <div>
+    <label>Borrador (revisar antes de usar)</label>
+    <div class="out" id="out" role="status">El texto aparecerá aquí.</div>
+    <p class="muted">Hashtags orientativos: #DulceGloria #SevillaEste #PasteleriaArtesanal #TartasSevilla — ajustar según campaña real.</p>
+  </div>
+</div>
+<p class="muted" style="margin-top:28px;max-width:900px">
+  Calendario editorial y banco de medios: usar hoja de cálculo o CMS del negocio.
+  Publicación: Meta Business Suite con cuenta profesional. Ver requisitos oficiales de Instagram Graph API antes de automatizar.
+  <br><a href="index.html">← Volver a la web pública</a>
+</p>
+<script>
+function generar() {
+  var tipo = document.getElementById("tipo").value;
+  var tema = (document.getElementById("tema").value || "nuestras especialidades").trim();
+  var tono = document.getElementById("tono").value;
+  var extra = (document.getElementById("extra").value || "").trim();
+  var openers = {
+    cercano: "En Dulce Gloria preparamos con cariño ",
+    elegante: "Detalle artesanal en Sevilla Este: ",
+    comercial: "Descubre en nuestro obrador "
+  };
+  var cta = {
+    post: "¿Te apetece pasar por Sevilla Este? Carta y reservas en nuestros enlaces.",
+    story: "Desliza / visita la carta oficial.",
+    reel: "Guion orientativo — grabar solo con producto y local reales."
+  };
+  var body = openers[tono] + tema + ".";
+  if (extra) body += " " + extra;
+  body += "\n\n";
+  if (tipo === "reel") {
+    body += "ESTRUCTURA REEL (borrador):\n1) Plano detalle del producto.\n2) Gesto artesanal o servicio.\n3) Ambiente del local (si hay toma autorizada).\n4) Cierre con nombre Dulce Gloria + ubicación Sevilla Este.\n\nTexto en pantalla (corto): " + tema + "\n";
+  } else if (tipo === "story") {
+    body += "Idea story: 1–3 fotogramas. Mensaje breve. CTA a WhatsApp o carta Qamarero.\n";
+  } else {
+    body += cta.post + "\n";
+  }
+  body += "\n—\nBorrador local. Revisar, no publicar sin aprobación. No inventar precios ni promociones.";
+  document.getElementById("out").textContent = body;
+}
+function copiar() {
+  var t = document.getElementById("out").textContent;
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { alert("Copiado"); });
+  else prompt("Copia:", t);
+}
+</script>
+</body>
+</html>
