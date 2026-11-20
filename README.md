@@ -1,13 +1,19 @@
-# Dulce Gloria — Demo
+# Dulce Gloria — Demo premium
 
-## Fix 3D (nov 2026)
-**Causa:** `THREE.CapsuleGeometry` no existe en Three.js **r128** (añadida en r133). Al construir drips de chocolate el build fallaba y el loader se quedaba en «Cargando modelo…».
+## Fotos oficiales (dulcegloria.com)
+Asociadas con verificación visual:
+- Chocolate / Matilda → tartas chocolate
+- Red Velvet → productos Red Velvet
+- Cheesecake → cheesecakes
+- Café → Flat White / Matcha
+- Tostadas → brunch seleccionado
+- Pastelería → Lemon Pie / Cinnamon (referencia de categoría)
 
-**Solución:** drips con `CylinderGeometry`; carga dual CDN; estados loading/ok/error + reintentar; tamaño mínimo del contenedor.
+## 3D
+Procedural Three.js r128 (sin CapsuleGeometry). Orientativo + foto oficial de referencia.
 
-## Fotos
-- Galería/hero: dulcegloria.com (oficiales)
-- Por producto: mapa `PRODUCT_PHOTOS` en `app.js` (vacío hasta verificación 1:1)
+## Encargos
+Formulario → resumen → WhatsApp (+34 652 02 06 42). Sin registro automático.
 
-## Deploy
-Vercel / GitHub Pages — branch `main`
+## Mesas
+https://booking.qamarero.com/new-reservation/dulce-gloria
