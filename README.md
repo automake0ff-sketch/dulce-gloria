@@ -6,25 +6,17 @@ Demo personalizada para https://dulcegloria.com/
 - Identidad y fotos: https://dulcegloria.com/
 - Carta y precios: https://r.qamarero.com/dulce-gloria
 - Reservas: https://booking.qamarero.com/new-reservation/dulce-gloria
-- Instagram: https://www.instagram.com/dulcegloriasweetsandco/
+- Instagram: https://www.instagram.com/dulcegloriasweetsandcoffe/
 - Tel: +34 652 02 06 42
 - Dirección: Av. de Emilio Lemos, 26, 41020 Sevilla
 
 ## Archivos
-- `index.html` — UI, estilos, estructura 4 secciones
-- `app.js` — catálogo, filtros, configurador, flujo WhatsApp
-- `cake3d.js` — visor Three.js r128 procedural diferenciado por variedad
-
-## Características
-- Inicio premium con fotos oficiales
-- Carta con categorías, búsqueda, fichas y fotos verificadas
-- Configurador controlado (solo variedades de la oferta)
-- Vista híbrida foto real + 3D orientativo
-- Encargos por WhatsApp con validación y resumen
-- Reservas vía enlace oficial Qamarero
-- Sin backend, sin pagos, sin plantilla genérica
+- `index.html` — UI premium, 5 secciones, lightbox
+- `app.js` — catálogo, featured tartas, filtros, WhatsApp
+- `cake3d.js` — visor Three.js r128
 
 ## Notas
-- Precios Signature "Consultar" según carta Qamarero
-- Modelo 3D es orientativo (no GLB del producto real)
-- Fotos solo asignadas cuando hay correspondencia visual
+- Signature: precio «Consultar» (no 0,00€)
+- Fotos solo verificadas; resto: «Fotografía próximamente»
+- 3D orientativo; foto real como referencia principal
+- Encargos por WhatsApp, sin pago ni backend
