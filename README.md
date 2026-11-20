@@ -1,27 +1,13 @@
-# Dulce Gloria Sweets & Coffe — Demo premium
+# Dulce Gloria — Demo
 
-**Repo:** https://github.com/automake0ff-sketch/dulce-gloria
+## Fix 3D (nov 2026)
+**Causa:** `THREE.CapsuleGeometry` no existe en Three.js **r128** (añadida en r133). Al construir drips de chocolate el build fallaba y el loader se quedaba en «Cargando modelo…».
 
-## Fuentes oficiales
-- Web: https://dulcegloria.com/
-- Carta: https://r.qamarero.com/dulce-gloria
-- Logo: dulcegloria.com/wp-content/uploads/2025/12/Diseno-sin-titulo-56.png
-- Contacto: 652 02 06 42 · Av. Emilio Lemos 26, Sevilla
+**Solución:** drips con `CylinderGeometry`; carga dual CDN; estados loading/ok/error + reintentar; tamaño mínimo del contenedor.
 
-## Estructura (4 apartados)
-1. **Inicio** — logo, hero con foto real, historia, galería
-2. **Carta** — productos y precios Qamarero (sin emojis, sin fotos inventadas)
-3. **Crea tu tarta** — configurador 3D orientativo + WhatsApp
-4. **Contacto** — teléfono, horario, ubicación, encargos
+## Fotos
+- Galería/hero: dulcegloria.com (oficiales)
+- Por producto: mapa `PRODUCT_PHOTOS` en `app.js` (vacío hasta verificación 1:1)
 
-## Archivos
-- `index.html` — UI + estilos + Three.js CDN
-- `app.js` — catálogo, motor 3D, WhatsApp
-
-## Notas
-- 3D = geometría Three.js (MIT), no fotografía de tarta
-- Fotos de producto 1:1 pendientes de material del negocio
-- Demo sin backend ni pagos
-
-## GitHub Pages
-Settings → Pages → branch `main` → root
+## Deploy
+Vercel / GitHub Pages — branch `main`
