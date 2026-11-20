@@ -14,6 +14,8 @@
     cookies: "https://dulcegloria.com/wp-content/uploads/2026/05/Captura-de-pantalla-2026-05-08-a-las-10.42.56-763x1024.png"
   };
 
+  /* Solo asociaciones con correspondencia visual razonable.
+     No reutilizar la misma foto entre variedades distintas. */
   var PRODUCT_PHOTOS = {
     1: { src: PHOTO.choco, verified: true },
     20: { src: PHOTO.choco, verified: true },
@@ -77,11 +79,11 @@
   var cakeTypes = [
     { id: "matilda", label: "Matilda", frost: "matilda", photo: PHOTO.choco, priceHint: "Desde 4,90€ / 28,90€", desc: "Chocolate intenso" },
     { id: "redvelvet", label: "Red Velvet", frost: "redvelvet", photo: PHOTO.redvelvet, priceHint: "Desde 4,50€", desc: "Clásico aterciopelado" },
-    { id: "lotus", label: "Lotus", frost: "lotus", photo: null, priceHint: "Consultar", desc: "Galleta Lotus" },
-    { id: "oreo", label: "Oreo", frost: "oreo", photo: null, priceHint: "Consultar", desc: "Signature" },
+    { id: "lotus", label: "Lotus", frost: "lotus", photo: null, priceHint: "Consultar precio", desc: "Galleta Lotus · Signature" },
+    { id: "oreo", label: "Oreo", frost: "oreo", photo: null, priceHint: "Consultar precio", desc: "Signature" },
     { id: "pistacho-frambuesa", label: "Pistacho y frambuesa", frost: "pistacho", photo: null, priceHint: "Desde 4,90€", desc: "Porción o encargo" },
     { id: "ferrero", label: "Ferrero", frost: "ferrero", photo: null, priceHint: "Desde 4,90€", desc: "Avellana y chocolate" },
-    { id: "selva", label: "Selva Negra", frost: "selva", photo: null, priceHint: "Consultar", desc: "Signature" },
+    { id: "selva", label: "Selva Negra", frost: "selva", photo: null, priceHint: "Consultar precio", desc: "Signature" },
     { id: "nata-fresa", label: "Nata y fresa", frost: "natafresa", photo: null, priceHint: "Desde 4,50€", desc: "Con fresas" },
     { id: "choco-bosque", label: "Chocolate y frutos", frost: "chocolate", photo: null, priceHint: "29,90€", desc: "Frutos del bosque" },
     { id: "cheesecake", label: "Cheesecake", frost: "crema", photo: PHOTO.cheesecake, priceHint: "3,50€ / 23,90€", desc: "Tarta de queso" }
@@ -92,6 +94,19 @@
     { id: "m", label: "Mediana", sub: "8–10 pers.", people: "8–10" },
     { id: "l", label: "Grande", sub: "12–14 pers.", people: "12–14" }
   ];
+
+  var sizesByTipo = {
+    matilda: ["s", "m", "l"],
+    redvelvet: ["s", "m", "l"],
+    lotus: null,
+    oreo: null,
+    "pistacho-frambuesa": ["s", "m", "l"],
+    ferrero: ["s", "m", "l"],
+    selva: null,
+    "nata-fresa": ["s", "m", "l"],
+    "choco-bosque": ["s", "m", "l"],
+    cheesecake: ["s", "m", "l"]
+  };
 
   var cakeState = { tipo: "matilda", size: "m", msg: "", date: "", time: "", notes: "", candles: false };
 
@@ -198,8 +213,8 @@
     document.getElementById("modal-cat").textContent = p.cat;
     document.getElementById("modal-name").textContent = p.name;
     document.getElementById("modal-desc").textContent = p.desc;
-    document.getElementById("modal-price").textContent =
-      p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price;
+    var displayPrice = p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price;
+    document.getElementById("modal-price").textContent = displayPrice;
     var wrap = document.getElementById("modal-img-wrap");
     var noPhoto = document.getElementById("modal-no-photo");
     var existing = wrap.querySelector("img.modal-photo");
@@ -244,9 +259,7 @@
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (page === "crear") {
-      setTimeout(function () {
-        ensureThreeThenInit();
-      }, 220);
+      setTimeout(function () { ensureThreeThenInit(); }, 220);
     }
   }
 
@@ -267,7 +280,7 @@
       } else {
         var ph = document.createElement("div");
         ph.style.cssText = "height:90px;background:linear-gradient(145deg,#F3E4DA,#E5C4B6);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#7A6456;border-radius:12px 12px 0 0";
-        ph.textContent = "Foto próximamente";
+        ph.textContent = t.label;
         d.appendChild(ph);
       }
       var lab = document.createElement("div");
@@ -283,7 +296,12 @@
     var sg = document.getElementById("size-grid");
     if (sg) {
       sg.textContent = "";
-      cakeSizes.forEach(function (s) {
+      var allowed = sizesByTipo[cakeState.tipo];
+      var list = cakeSizes;
+      if (allowed && allowed.length) {
+        list = cakeSizes.filter(function (s) { return allowed.indexOf(s.id) >= 0; });
+      }
+      list.forEach(function (s) {
         var d = document.createElement("div");
         d.className = "option-card" + (cakeState.size === s.id ? " selected" : "");
         d.onclick = function () { selectSize(s.id); };
@@ -292,17 +310,27 @@
         lab.textContent = s.label;
         var sub = document.createElement("div");
         sub.className = "opt-sub";
-        sub.textContent = s.sub;
+        sub.textContent = s.sub + (allowed === null ? " · Consultar" : "");
         d.appendChild(lab);
         d.appendChild(sub);
         sg.appendChild(d);
       });
+      if (allowed === null) {
+        var note = document.createElement("p");
+        note.style.cssText = "font-size:.75rem;color:#7A6456;margin-top:8px;grid-column:1/-1";
+        note.textContent = "Disponibilidad de tamaños pendiente de confirmar con el local.";
+        sg.appendChild(note);
+      }
     }
     updateCakePreview();
   }
 
   function selectTipo(id) {
     cakeState.tipo = id;
+    var allowed = sizesByTipo[id];
+    if (allowed && allowed.length && allowed.indexOf(cakeState.size) < 0) {
+      cakeState.size = allowed[0];
+    }
     initCakeConfig();
     updateCakePreview();
   }
@@ -328,7 +356,7 @@
     set("sum-tipo", tipo ? tipo.label : "—");
     set("sum-size", (cakeSizes.find(function (s) { return s.id === cakeState.size; }) || {}).label || "—");
     set("sum-msg", cakeState.msg || "—");
-    set("sum-candles", cakeState.candles ? "Sí (a confirmar)" : "No");
+    set("sum-candles", cakeState.candles ? "Sí" : "No");
     set("sum-date", (cakeState.date || "—") + (cakeState.time ? " · " + cakeState.time : ""));
     set("sum-price", tipo && tipo.priceHint ? tipo.priceHint : "Presupuesto pendiente de confirmar");
 
@@ -406,7 +434,7 @@
     showPage("contacto");
     setTimeout(function () {
       var n = document.getElementById("order-product-name");
-      if (n) n.textContent = p.name + " · " + (p.price === "0,00€" || !p.price ? "Consultar" : p.price);
+      if (n) n.textContent = p.name + " · " + (p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price);
       var i = document.getElementById("order-product-img");
       if (i) {
         if (p.img) {
@@ -494,11 +522,11 @@
 
     lines.push("");
     lines.push("RECOGIDA");
-    lines.push("Fecha: " + (date || "—"));
-    lines.push("Hora: " + (time || "—"));
+    lines.push("Fecha preferida: " + (date || "—"));
+    lines.push("Hora preferida: " + (time || "—"));
     lines.push("");
     lines.push("PRECIO");
-    lines.push("Presupuesto pendiente de confirmar por Dulce Gloria.");
+    lines.push("Pendiente de confirmar por Dulce Gloria.");
     lines.push("");
     if (notes) {
       lines.push("OBSERVACIONES");
@@ -594,6 +622,27 @@
     });
   }
 
+  window.showPage = showPage;
+  window.filterProducts = filterProducts;
+  window.searchProducts = searchProducts;
+  window.openProduct = openProduct;
+  window.closeModal = closeModal;
+  window.selectTipo = selectTipo;
+  window.selectSize = selectSize;
+  window.updateCakePreview = updateCakePreview;
+  window.resetCakeConfig = resetCakeConfig;
+  window.startOrderFromConfig = startOrderFromConfig;
+  window.startOrderFromProduct = startOrderFromProduct;
+  window.submitOrderWhatsApp = submitOrderWhatsApp;
+  window.closeOrderSummary = closeOrderSummary;
+  window.copyOrderSummary = copyOrderSummary;
+  window.open3DViewer = open3DViewer;
+  window.close3DModal = close3DModal;
+  window.ensureThreeThenInit = ensureThreeThenInit;
+  window.Cake3DResetCamera = function () {
+    if (window.Cake3D) window.Cake3D.resetCamera();
+  };
+
   function renderFeaturedTartas() {
     var el = document.getElementById("featured-tartas");
     if (!el) return;
@@ -624,7 +673,7 @@
       h.textContent = p.name;
       var price = document.createElement("div");
       price.className = "price";
-      price.textContent = p.price === "0,00€" || p.price === "0€" ? "Consultar precio" : p.price;
+      price.textContent = p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price;
       var actions = document.createElement("div");
       actions.className = "feat-actions";
       var b1 = document.createElement("button");
@@ -669,27 +718,6 @@
       fil.appendChild(b);
     });
   }
-
-  window.showPage = showPage;
-  window.filterProducts = filterProducts;
-  window.searchProducts = searchProducts;
-  window.openProduct = openProduct;
-  window.closeModal = closeModal;
-  window.selectTipo = selectTipo;
-  window.selectSize = selectSize;
-  window.updateCakePreview = updateCakePreview;
-  window.resetCakeConfig = resetCakeConfig;
-  window.startOrderFromConfig = startOrderFromConfig;
-  window.startOrderFromProduct = startOrderFromProduct;
-  window.submitOrderWhatsApp = submitOrderWhatsApp;
-  window.closeOrderSummary = closeOrderSummary;
-  window.copyOrderSummary = copyOrderSummary;
-  window.open3DViewer = open3DViewer;
-  window.close3DModal = close3DModal;
-  window.ensureThreeThenInit = ensureThreeThenInit;
-  window.Cake3DResetCamera = function () {
-    if (window.Cake3D) window.Cake3D.resetCamera();
-  };
 
   document.addEventListener("DOMContentLoaded", function () {
     applyProductPhotos();
