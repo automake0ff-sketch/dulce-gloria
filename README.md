@@ -1,47 +1,26 @@
 # Dulce Gloria Sweets & Coffe — Microapp Premium
 
-Experiencia digital personalizada para **Dulce Gloria Sweets & Coffe** (Sevilla Este).
+**Repo:** https://github.com/automake0ff-sketch/dulce-gloria
 
-**Repositorio:** https://github.com/automake0ff-sketch/dulce-gloria  
-**Ver online (GitHub Pages):** Settings → Pages → Deploy from branch `main` →  
-`https://automake0ff-sketch.github.io/dulce-gloria/`
+## Visor 3D real (Three.js / WebGL)
 
----
+- Modelos 3D **procedurales** generados con Three.js
+- Rotación 360°, zoom, sombras e iluminación realista
+- **Crea tu propia tarta**: el modelo 3D se actualiza al cambiar tipo, tamaño, cobertura, decoración, velas y mensaje
+- Botón **Ver en 3D** en tartas del catálogo
+- Sin GLB externos: geometría generada en el cliente (sin problemas de licencia)
 
-## Qué incluye
+### Productos con 3D
+Tartas, Cakes, Colección Signature, Cheesecakes.
 
-- **Carta digital** con productos y precios reales de [Qamarero](https://r.qamarero.com/dulce-gloria)
-- **Crea tu propia tarta** — configurador visual con vista previa en tiempo real
-- Especialidades, encargos, club de fidelización (propuesta), contacto
-- Diseño mobile-first premium (crema, rosa empolvado, terracota)
+### Pendiente
+- Fotos reales de productos (hosting)
+- Modelos GLB fotorealistas opcionales
 
-## Fuentes oficiales
+## Carta
+Precios Qamarero: Lemon Pie 3,70€ · Cinnamon Roll 3,80€ · Matilda 28,90€ · Brunch · Helados Gloria
 
-| Fuente | Uso |
-|--------|-----|
-| [dulcegloria.com](https://dulcegloria.com/) | Historia, horarios, contacto |
-| [Carta Qamarero](https://r.qamarero.com/dulce-gloria) | Productos y precios |
-| Instagram @dulcegloriasweetsandcoffe | Personalidad visual |
+## Demo frontend
+No envía pedidos ni guarda datos.
 
-## Datos del negocio
-
-- **Dirección:** Avenida de Emilio Lemos, 26 local 1.2, 41020 Sevilla
-- **Teléfono:** 652 02 06 42
-- **Horario:** L-V 8:00–13:30 / 16:00–21:30 · Miércoles cerrado · Sáb-Dom 8:00–21:30
-
-## Cómo abrirla
-
-1. Clona o descarga el repo
-2. Abre `index.html` en el navegador
-3. O activa GitHub Pages en Settings → Pages
-
-## Notas
-
-- Es una **demostración frontend**. No envía pedidos ni guarda datos.
-- El configurador de tartas usa opciones provisionales pendientes de aprobación.
-- Los precios de Colección Signature aparecen como "Consultar" (0,00€ en Qamarero).
-- El Club de fidelización es una propuesta comercial, no un programa oficial.
-
----
-
-Hecho exclusivamente para Dulce Gloria Sweets & Coffe.
+GitHub Pages: Settings → Pages → main → `https://automake0ff-sketch.github.io/dulce-gloria/`
