@@ -1,4 +1,4 @@
-# Dulce Gloria — Web comercial
+# Dulce Gloria — Web comercial (v2)
 
 Pastelería artesanal · Sevilla Este
 
@@ -7,19 +7,34 @@ https://dulce-gloria.vercel.app/
 
 ## Fuentes oficiales
 - Web: https://dulcegloria.com/
-- Carta: https://r.qamarero.com/dulce-gloria
-- Reservas: https://booking.qamarero.com/new-reservation/dulce-gloria
+- Carta (Qamarero): https://r.qamarero.com/dulce-gloria
+- Reservas (Qamarero): https://booking.qamarero.com/new-reservation/dulce-gloria
 - Instagram: https://www.instagram.com/dulcegloriasweetsandcoffe/
 - WhatsApp encargos: +34 652 02 06 42
 - Dirección: Av. de Emilio Lemos, 26, 41020 Sevilla
 
-## Archivos
-- `index.html` — UI, SEO, inicio, carta, configurador, contacto
-- `app.js` — catálogo, filtros, encargos WhatsApp
-- `cake3d.js` — visor 3D procedural (Three.js)
-- `robots.txt` / `sitemap.xml` — SEO
+## Arquitectura
+Ver `ARCHITECTURE.md`.
 
-## Notas
-- Sin backend ni pagos. Encargos vía WhatsApp.
-- Precios Signature y algunas fotos pendientes de confirmación del negocio.
-- El 3D es orientativo; la foto real es la referencia.
+## Archivos principales
+| Archivo | Rol |
+|---------|-----|
+| `index.html` | Web pública |
+| `app.js` | Catálogo orientativo, encargos WhatsApp |
+| `cake3d.js` | Visor 3D **orientativo** (procedural; GLB pendiente) |
+| `content-studio.html` | Herramienta offline de borradores RRSS (no publica) |
+| `assets/models/` | Estructura para futuros GLB |
+| `robots.txt` / `sitemap.xml` | SEO |
+
+## Qamarero
+Es la fuente de verdad de carta y reservas. **Esta web no sincroniza precios** con el TPV.
+
+## 3D
+Modelos procedurales = orientación visual.  
+Producción fotorrealista: Blender → GLB en `assets/models/cakes/` (ver README en esa carpeta).
+
+## Content Studio
+Solo plantillas locales. Sin API keys. Sin publicación automática en Instagram.
+
+## Despliegue
+Estático en Vercel. No requiere backend ni variables secretas para la web pública.
