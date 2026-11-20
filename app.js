@@ -14,20 +14,17 @@
     cookies: "https://dulcegloria.com/wp-content/uploads/2026/05/Captura-de-pantalla-2026-05-08-a-las-10.42.56-763x1024.png"
   };
 
+  /* Solo asociaciones con correspondencia visual razonable.
+     No reutilizar la misma foto entre variedades distintas. */
   var PRODUCT_PHOTOS = {
     1: { src: PHOTO.choco, verified: true },
     20: { src: PHOTO.choco, verified: true },
-    21: { src: PHOTO.chocoDeco, verified: true },
-    22: { src: PHOTO.chocoDeco, verified: true },
-    23: { src: PHOTO.choco, verified: true },
     2: { src: PHOTO.redvelvet, verified: true },
     103: { src: PHOTO.redvelvet, verified: true },
     35: { src: PHOTO.cheesecake, verified: true },
     37: { src: PHOTO.cheesecake, verified: true },
     93: { src: PHOTO.coffee, verified: true },
-    95: { src: PHOTO.coffee, verified: true },
-    60: { src: PHOTO.toast, verified: true },
-    61: { src: PHOTO.toast, verified: true }
+    60: { src: PHOTO.toast, verified: true }
   };
 
   var products = [
@@ -74,7 +71,7 @@
     });
   }
 
-  var categories = ["Todos", "Dulces Artesanos", "Cakes", "Tartas", "Colección Signature", "Cheesecakes", "Helados Gloria", "Brunch", "Cafés", "Packs"];
+  var categories = ["Todos", "Tartas", "Cakes", "Cheesecakes", "Colección Signature", "Dulces Artesanos", "Brunch", "Cafés", "Helados Gloria", "Packs"];
   var currentFilter = "Todos";
   var orderState = { productId: null, mode: "config" };
 
@@ -86,8 +83,8 @@
     { id: "pistacho-frambuesa", label: "Pistacho y frambuesa", frost: "pistacho", photo: null, priceHint: "Desde 4,90€", desc: "Porción o encargo" },
     { id: "ferrero", label: "Ferrero", frost: "ferrero", photo: null, priceHint: "Desde 4,90€", desc: "Avellana y chocolate" },
     { id: "selva", label: "Selva Negra", frost: "selva", photo: null, priceHint: "Consultar", desc: "Signature" },
-    { id: "nata-fresa", label: "Nata y fresa", frost: "natafresa", photo: PHOTO.chocoDeco, priceHint: "Desde 4,50€", desc: "Con fresas" },
-    { id: "choco-bosque", label: "Chocolate y frutos", frost: "chocolate", photo: PHOTO.chocoDeco, priceHint: "29,90€", desc: "Frutos del bosque" },
+    { id: "nata-fresa", label: "Nata y fresa", frost: "natafresa", photo: null, priceHint: "Desde 4,50€", desc: "Con fresas" },
+    { id: "choco-bosque", label: "Chocolate y frutos", frost: "chocolate", photo: null, priceHint: "29,90€", desc: "Frutos del bosque" },
     { id: "cheesecake", label: "Cheesecake", frost: "crema", photo: PHOTO.cheesecake, priceHint: "3,50€ / 23,90€", desc: "Tarta de queso" }
   ];
 
@@ -107,9 +104,9 @@
     list.forEach(function (p) {
       var card = document.createElement("div");
       card.className = "product-card";
-      card.onclick = function () { openProduct(p.id); };
       var img = document.createElement("div");
       img.className = "product-img";
+      img.onclick = function () { openProduct(p.id); };
       if (p.tag) {
         var b = document.createElement("div");
         b.className = "product-badge";
@@ -136,6 +133,30 @@
         d.textContent = pair[1];
         body.appendChild(d);
       });
+      var actions = document.createElement("div");
+      actions.className = "product-actions";
+      var btnView = document.createElement("button");
+      btnView.type = "button";
+      btnView.className = "btn-card";
+      btnView.textContent = "Ver producto";
+      btnView.onclick = function (e) {
+        e.stopPropagation();
+        openProduct(p.id);
+      };
+      actions.appendChild(btnView);
+      var isCake = !!p.orderable || ["Tartas", "Cakes", "Colección Signature", "Cheesecakes"].indexOf(p.cat) >= 0;
+      if (isCake) {
+        var btnOrd = document.createElement("button");
+        btnOrd.type = "button";
+        btnOrd.className = "btn-card primary";
+        btnOrd.textContent = "Solicitar encargo";
+        btnOrd.onclick = function (e) {
+          e.stopPropagation();
+          startOrderFromProduct(p);
+        };
+        actions.appendChild(btnOrd);
+      }
+      body.appendChild(actions);
       card.appendChild(img);
       card.appendChild(body);
       frag.appendChild(card);
@@ -315,10 +336,10 @@
       if (tipo && tipo.photo) {
         hp.src = tipo.photo;
         hp.style.display = "block";
-        hp.alt = tipo.label;
+        hp.alt = tipo.label + " — foto real";
       } else {
-        hp.src = PHOTO.choco;
-        hp.alt = "Referencia visual orientativa";
+        hp.src = PHOTO.pasteleria || PHOTO.choco;
+        hp.alt = "Referencia visual orientativa del obrador";
       }
     }
 
@@ -331,7 +352,7 @@
           msg: cakeState.msg,
           candles: cakeState.candles
         });
-      } catch (e) { /* silent */ }
+      } catch (e) {}
     }
   }
 
@@ -369,8 +390,18 @@
     setTimeout(function () { ensureThreeThenInit(); }, 80);
   }
 
+  function clearOrderForm() {
+    ["order-name", "order-phone", "order-date", "order-time", "order-notes"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    var q = document.getElementById("order-qty");
+    if (q) q.value = "1";
+  }
+
   function startOrderFromProduct(p) {
     orderState = { productId: p.id, mode: "catalog" };
+    clearOrderForm();
     showPage("contacto");
     setTimeout(function () {
       var n = document.getElementById("order-product-name");
@@ -384,27 +415,39 @@
           i.style.display = "none";
         }
       }
-      var od = document.getElementById("order-date");
-      if (od && cakeState.date) od.value = cakeState.date;
       document.getElementById("order-form-block").scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
   }
 
   function startOrderFromConfig() {
+    cakeState.msg = ((document.getElementById("cake-msg") || {}).value || "").trim();
+    cakeState.date = (document.getElementById("cake-date") || {}).value || "";
+    cakeState.time = ((document.getElementById("cake-time") || {}).value || "").trim();
+    cakeState.notes = ((document.getElementById("cake-notes") || {}).value || "").trim();
+    cakeState.candles = !!(document.getElementById("cake-candles") || {}).checked;
+
     orderState = { productId: null, mode: "config" };
+    clearOrderForm();
     var tipo = cakeTypes.find(function (t) { return t.id === cakeState.tipo; });
     var size = cakeSizes.find(function (s) { return s.id === cakeState.size; });
     showPage("contacto");
     setTimeout(function () {
       var n = document.getElementById("order-product-name");
-      if (n) n.textContent = (tipo ? tipo.label : "Tarta") + " · " + (size ? size.label : "") + " · " + (tipo ? tipo.priceHint : "A confirmar");
+      if (n) {
+        n.textContent =
+          (tipo ? tipo.label : "Tarta") +
+          " · " +
+          (size ? size.label : "") +
+          " · " +
+          (tipo && tipo.priceHint ? tipo.priceHint : "Presupuesto pendiente de confirmar");
+      }
       var i = document.getElementById("order-product-img");
       if (i) {
         if (tipo && tipo.photo) {
           i.src = tipo.photo;
           i.style.display = "block";
         } else {
-          i.src = PHOTO.choco;
+          i.src = PHOTO.pasteleria || PHOTO.choco;
           i.style.display = "block";
         }
       }
