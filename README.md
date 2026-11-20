@@ -1,19 +1,18 @@
-# Dulce Gloria — Demo premium
+# Dulce Gloria — Demo
 
-## Fotos oficiales (dulcegloria.com)
-Asociadas con verificación visual:
-- Chocolate / Matilda → tartas chocolate
-- Red Velvet → productos Red Velvet
-- Cheesecake → cheesecakes
-- Café → Flat White / Matcha
-- Tostadas → brunch seleccionado
-- Pastelería → Lemon Pie / Cinnamon (referencia de categoría)
+https://github.com/automake0ff-sketch/dulce-gloria
 
-## 3D
-Procedural Three.js r128 (sin CapsuleGeometry). Orientativo + foto oficial de referencia.
+## Archivos
+- `index.html` — UI (Inicio, Carta, Crea tu tarta, Encargos)
+- `app.js` — catálogo, fotos oficiales, encargos WhatsApp
+- `cake3d.js` — motor Three.js r128 (sin CapsuleGeometry)
 
-## Encargos
-Formulario → resumen → WhatsApp (+34 652 02 06 42). Sin registro automático.
+## Fuentes
+- Web: https://dulcegloria.com/
+- Carta: https://r.qamarero.com/dulce-gloria
+- Reservas mesa: https://booking.qamarero.com/new-reservation/dulce-gloria
 
-## Mesas
-https://booking.qamarero.com/new-reservation/dulce-gloria
+## Notas
+- 3D orientativo + foto oficial de referencia
+- Encargos por WhatsApp (sin registro automático)
+- Demo estática, sin backend ni pagos
