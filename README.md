@@ -1,33 +1,53 @@
-# Dulce Gloria Sweets & Coffe — Microapp
+# Dulce Gloria Sweets & Coffe — Microapp Premium
 
-Experiencia digital personalizada para **Dulce Gloria Sweets & Coffe**  
-Avenida de Emilio Lemos 26, Sevilla Este, Sevilla.
+Experiencia digital personalizada construida a partir de las **fuentes oficiales** de Dulce Gloria.
 
-## Qué incluye
+## Fuentes utilizadas
 
-- **Página de inicio** con identidad de marca y acceso rápido a las secciones principales
-- **Carta digital** con productos verificados (cheesecakes, tartas, bollería, tostadas, desayunos y café)
-- **Fichas de producto** interactivas
-- **Encarga tu Tarta** — formulario de demostración (no envía datos reales)
-- **Descubre el local** — recorrido visual del establecimiento
-- **Club Dulce Gloria** — tarjeta de fidelización interactiva (demo)
-- **Panel de administración** demostrativo (todo en frontend, sin backend)
+| Fuente | Uso |
+|--------|-----|
+| [Web oficial](https://dulcegloria.com/) | Historia, filosofía, contacto, horarios |
+| [Carta Qamarero](https://r.qamarero.com/dulce-gloria) | **Productos, categorías y precios reales** |
+| Instagram @dulcegloriasweetsandcoffe | Personalidad visual (acceso limitado) |
+| Cosas de Comé | Contexto del negocio y especialidades |
+
+## Datos verificados
+
+- **Nombre**: Dulce Gloria Sweets & Coffe
+- **Dirección**: Avenida de Emilio Lemos, 26 local 1.2, 41020 Sevilla
+- **Teléfono**: 652 02 06 42
+- **Horario** (según web y Qamarero):
+  - L-V: 08:00–13:30 / 16:00–20:30 o 21:30
+  - Sábado y domingo: 08:00–20:30 / 21:30
+  - Miércoles: Cerrado (según web oficial)
+
+## Categorías reales de la carta (Qamarero)
+
+- Cakes / Porciones
+- Tartas enteras
+- Cheesecakes
+- Dulces Artesanos (Cinnamon Roll, Croissant, Brownies…)
+- Cookies Dulce Gloria
+- Brunch & Tostas
+- Huevos
+- Bowls
+- Cafés de Especialidad & Matcha
+- Frappés, Limonadas, Smoothies, Zumos
+- Packs y ofertas
 
 ## Cómo verla
 
-1. Abre `index.html` en cualquier navegador, o
-2. Activa **GitHub Pages** en este repositorio (Settings → Pages → Source: Deploy from a branch → main)
+Abre `index.html` o activa **GitHub Pages**:
 
-Una vez activado GitHub Pages, la app estará disponible en:  
 `https://automake0ff-sketch.github.io/dulce-gloria/`
 
 ## Notas importantes
 
-- Solo se incluyen productos verificados públicamente.
-- Los precios e ingredientes detallados aparecen como “Consultar en local”.
-- El formulario de encargos y el Club son de demostración (no almacenan ni envían datos).
-- Esta microapp está pensada para presentársela a los propietarios de Dulce Gloria.
+- Esta es una **demostración frontend**. No envía encargos reales ni guarda datos.
+- Los precios y productos se han tomado de la carta oficial de Qamarero (noviembre 2026).
+- Las fotografías de producto son representaciones o placeholders; las fotos reales deben aportarse por el establecimiento.
+- El Club de fidelización es una **propuesta comercial**, no un programa oficial activo.
 
 ---
 
-Diseñada exclusivamente para Dulce Gloria Sweets & Coffe.
+Construido exclusivamente para Dulce Gloria Sweets & Coffe.
