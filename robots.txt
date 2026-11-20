@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dulce-gloria.vercel.app/sitemap.xml
