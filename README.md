@@ -1,26 +1,21 @@
-# Dulce Gloria Sweets & Coffe — Microapp Premium
+# Dulce Gloria — Microapp + Configurador 3D premium
 
 **Repo:** https://github.com/automake0ff-sketch/dulce-gloria
 
-## Visor 3D real (Three.js / WebGL)
+## Configurador 3D (Three.js / WebGL)
 
-- Modelos 3D **procedurales** generados con Three.js
-- Rotación 360°, zoom, sombras e iluminación realista
-- **Crea tu propia tarta**: el modelo 3D se actualiza al cambiar tipo, tamaño, cobertura, decoración, velas y mensaje
-- Botón **Ver en 3D** en tartas del catálogo
-- Sin GLB externos: geometría generada en el cliente (sin problemas de licencia)
-
-### Productos con 3D
-Tartas, Cakes, Colección Signature, Cheesecakes.
-
-### Pendiente
-- Fotos reales de productos (hosting)
-- Modelos GLB fotorealistas opcionales
+- Geometrías **procedurales mejoradas** (no GLB externos en esta versión)
+- Perfil visual distinto por tipo: Matilda, Red Velvet, Lotus, Oreo, Pistacho, Ferrero, Selva Negra, Nata y fresa, Chocolate y frutos
+- Capas de bizcocho, coberturas, drips, migas, decoraciones y velas en 3D
+- Mensaje con textura canvas sobre la tarta
+- Rotación 360°, zoom (rueda/pellizco/botones), vista inicial
+- Dispose correcto de renderer/geometrías al cerrar
+- Layout: visor 3D protagonista (izquierda en escritorio)
 
 ## Carta
-Precios Qamarero: Lemon Pie 3,70€ · Cinnamon Roll 3,80€ · Matilda 28,90€ · Brunch · Helados Gloria
+Precios Qamarero reales. Sin suplementos inventados en el configurador.
 
-## Demo frontend
-No envía pedidos ni guarda datos.
+## Demo
+Frontend puro. WhatsApp 652 02 06 42 para solicitud de presupuesto.
 
-GitHub Pages: Settings → Pages → main → `https://automake0ff-sketch.github.io/dulce-gloria/`
+GitHub Pages: Settings → Pages → main
