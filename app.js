@@ -14,8 +14,6 @@
     cookies: "https://dulcegloria.com/wp-content/uploads/2026/05/Captura-de-pantalla-2026-05-08-a-las-10.42.56-763x1024.png"
   };
 
-  /* Solo asociaciones con correspondencia visual razonable.
-     No reutilizar la misma foto entre variedades distintas. */
   var PRODUCT_PHOTOS = {
     1: { src: PHOTO.choco, verified: true },
     20: { src: PHOTO.choco, verified: true },
@@ -71,7 +69,8 @@
     });
   }
 
-  var categories = ["Todos", "Tartas", "Cakes", "Cheesecakes", "Colección Signature", "Dulces Artesanos", "Brunch", "Cafés", "Helados Gloria", "Packs"];
+  var categories = ["Todos", "Tartas", "Cakes", "Colección Signature", "Cheesecakes", "Dulces Artesanos", "Brunch", "Cafés", "Helados Gloria", "Packs"];
+  var FEATURED_IDS = [20, 2, 100, 101, 7, 6, 107, 9];
   var currentFilter = "Todos";
   var orderState = { productId: null, mode: "config" };
 
@@ -122,12 +121,13 @@
       } else {
         var ph = document.createElement("div");
         ph.className = "no-img";
-        ph.textContent = p.cat;
+        ph.textContent = "Fotografía próximamente";
         img.appendChild(ph);
       }
       var body = document.createElement("div");
       body.className = "product-body";
-      [["product-cat", p.cat], ["product-name", p.name], ["product-desc", p.desc], ["product-price", p.price]].forEach(function (pair) {
+      var displayPrice = p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price;
+      [["product-cat", p.cat], ["product-name", p.name], ["product-desc", p.desc], ["product-price", displayPrice]].forEach(function (pair) {
         var d = document.createElement("div");
         d.className = pair[0];
         d.textContent = pair[1];
@@ -198,7 +198,8 @@
     document.getElementById("modal-cat").textContent = p.cat;
     document.getElementById("modal-name").textContent = p.name;
     document.getElementById("modal-desc").textContent = p.desc;
-    document.getElementById("modal-price").textContent = p.price;
+    document.getElementById("modal-price").textContent =
+      p.price === "0,00€" || p.price === "0€" || !p.price ? "Consultar precio" : p.price;
     var wrap = document.getElementById("modal-img-wrap");
     var noPhoto = document.getElementById("modal-no-photo");
     var existing = wrap.querySelector("img.modal-photo");
@@ -266,7 +267,7 @@
       } else {
         var ph = document.createElement("div");
         ph.style.cssText = "height:90px;background:linear-gradient(145deg,#F3E4DA,#E5C4B6);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#7A6456;border-radius:12px 12px 0 0";
-        ph.textContent = t.label;
+        ph.textContent = "Foto próximamente";
         d.appendChild(ph);
       }
       var lab = document.createElement("div");
@@ -327,9 +328,9 @@
     set("sum-tipo", tipo ? tipo.label : "—");
     set("sum-size", (cakeSizes.find(function (s) { return s.id === cakeState.size; }) || {}).label || "—");
     set("sum-msg", cakeState.msg || "—");
-    set("sum-candles", cakeState.candles ? "Sí" : "No");
+    set("sum-candles", cakeState.candles ? "Sí (a confirmar)" : "No");
     set("sum-date", (cakeState.date || "—") + (cakeState.time ? " · " + cakeState.time : ""));
-    set("sum-price", tipo && tipo.priceHint ? tipo.priceHint : "A confirmar");
+    set("sum-price", tipo && tipo.priceHint ? tipo.priceHint : "Presupuesto pendiente de confirmar");
 
     var hp = document.getElementById("hybrid-photo");
     if (hp) {
@@ -405,7 +406,7 @@
     showPage("contacto");
     setTimeout(function () {
       var n = document.getElementById("order-product-name");
-      if (n) n.textContent = p.name + " · " + p.price;
+      if (n) n.textContent = p.name + " · " + (p.price === "0,00€" || !p.price ? "Consultar" : p.price);
       var i = document.getElementById("order-product-img");
       if (i) {
         if (p.img) {
@@ -488,7 +489,7 @@
       lines.push("Tarta: " + (tipo ? tipo.label : "—"));
       lines.push("Tamaño: " + (size ? size.label + " (" + size.people + " pers.)" : "—"));
       lines.push("Mensaje: " + (cakeState.msg || "—"));
-      lines.push("Velas: " + (cakeState.candles ? "Sí" : "No"));
+      lines.push("Velas: " + (cakeState.candles ? "Sí (a confirmar)" : "No"));
     }
 
     lines.push("");
@@ -505,7 +506,7 @@
       lines.push("");
     }
     lines.push("IMPORTANTE:");
-    lines.push("Solicitud pendiente de confirmación por Dulce Gloria.");
+    lines.push("Esta es una solicitud de encargo. El pedido queda pendiente de confirmación por Dulce Gloria.");
     lines.push("No implica reserva ni pago hasta confirmación.");
     lines.push("");
     lines.push("Tel: +34 652 02 06 42");
@@ -540,7 +541,13 @@
       alert("Selecciona una fecha de recogida.");
       return false;
     }
-    var today = new Date().toISOString().slice(0, 10);
+    var now = new Date();
+    var today =
+      now.getFullYear() +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(now.getDate()).padStart(2, "0");
     if (date < today) {
       alert("La fecha de recogida debe ser hoy o posterior.");
       return false;
@@ -587,6 +594,82 @@
     });
   }
 
+  function renderFeaturedTartas() {
+    var el = document.getElementById("featured-tartas");
+    if (!el) return;
+    el.textContent = "";
+    FEATURED_IDS.forEach(function (id) {
+      var p = products.find(function (x) { return x.id === id; });
+      if (!p) return;
+      var card = document.createElement("div");
+      card.className = "feat-card";
+      var wrap = document.createElement("div");
+      wrap.className = "img-wrap";
+      if (p.img) {
+        var im = document.createElement("img");
+        im.src = p.img;
+        im.alt = p.name;
+        im.loading = "lazy";
+        wrap.appendChild(im);
+      } else {
+        var ph = document.createElement("div");
+        ph.className = "ph";
+        ph.textContent = "Fotografía próximamente";
+        wrap.appendChild(ph);
+      }
+      var body = document.createElement("div");
+      body.className = "body";
+      var h = document.createElement("h3");
+      h.className = "serif";
+      h.textContent = p.name;
+      var price = document.createElement("div");
+      price.className = "price";
+      price.textContent = p.price === "0,00€" || p.price === "0€" ? "Consultar precio" : p.price;
+      var actions = document.createElement("div");
+      actions.className = "feat-actions";
+      var b1 = document.createElement("button");
+      b1.type = "button";
+      b1.className = "btn-card";
+      b1.textContent = "Ver detalles";
+      b1.onclick = function () { openProduct(p.id); };
+      var b2 = document.createElement("button");
+      b2.type = "button";
+      b2.className = "btn-card primary";
+      b2.textContent = "Solicitar";
+      b2.onclick = function () { startOrderFromProduct(p); };
+      actions.appendChild(b1);
+      actions.appendChild(b2);
+      body.appendChild(h);
+      body.appendChild(price);
+      body.appendChild(actions);
+      card.appendChild(wrap);
+      card.appendChild(body);
+      el.appendChild(card);
+    });
+  }
+
+  function renderTartasPage() {
+    var list = products.filter(function (p) {
+      return ["Tartas", "Cakes", "Colección Signature", "Cheesecakes"].indexOf(p.cat) >= 0;
+    });
+    renderProducts(list, "tartas-products");
+    var fil = document.getElementById("tartas-filters");
+    if (!fil) return;
+    fil.textContent = "";
+    ["Todas", "Tartas", "Cakes", "Colección Signature", "Cheesecakes"].forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "filter-btn" + (c === "Todas" ? " active" : "");
+      b.textContent = c;
+      b.onclick = function () {
+        fil.querySelectorAll(".filter-btn").forEach(function (x) { x.classList.remove("active"); });
+        b.classList.add("active");
+        var sub = c === "Todas" ? list : list.filter(function (p) { return p.cat === c; });
+        renderProducts(sub, "tartas-products");
+      };
+      fil.appendChild(b);
+    });
+  }
+
   window.showPage = showPage;
   window.filterProducts = filterProducts;
   window.searchProducts = searchProducts;
@@ -612,8 +695,16 @@
     applyProductPhotos();
     renderFilters();
     renderProducts(products, "all-products");
+    renderFeaturedTartas();
+    renderTartasPage();
     initCakeConfig();
-    var t = new Date().toISOString().slice(0, 10);
+    var now = new Date();
+    var t =
+      now.getFullYear() +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(now.getDate()).padStart(2, "0");
     ["order-date", "cake-date"].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.setAttribute("min", t);
