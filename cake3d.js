@@ -1,148 +1,149 @@
-/* Dulce Gloria — Cake3D (procedural, variedad diferenciada) */
-(function (global) {
+/* Dulce Gloria — Cake3D
+   Vista ORIENTATIVA (procedural). GLB fotorrealista: carpeta assets/models/cakes/ (pendiente de producción).
+   Procedural, variedad diferenciada · Three.js r128 · dispose + cancelAnimationFrame */
+window.Cake3D = (function () {
   "use strict";
 
-  var TYPE_PROFILE = {
-    matilda: { sponge: 0x4a2c1a, frost: 0x3d2314, drip: 0x2a1810, top: 0x5c3a24 },
-    redvelvet: { sponge: 0x8b2e3a, frost: 0xf5e6e0, drip: 0xc45c6a, top: 0xfaf0ec },
-    lotus: { sponge: 0xc4a574, frost: 0xf5e6d3, drip: 0x8b6914, top: 0xfff8ee },
-    oreo: { sponge: 0x2c2c2c, frost: 0xf5f5f5, drip: 0x1a1a1a, top: 0xffffff },
-    "pistacho-frambuesa": { sponge: 0x7a9a5c, frost: 0xe8f0e0, drip: 0xc45c6a, top: 0xf0f8e8 },
-    ferrero: { sponge: 0x5c3a24, frost: 0xd4a574, drip: 0x3d2314, top: 0xe8c4a0 },
-    selva: { sponge: 0x4a2c1a, frost: 0xf5e6e0, drip: 0x8b2e3a, top: 0xffffff },
-    "nata-fresa": { sponge: 0xf5e6e0, frost: 0xffffff, drip: 0xe85a6a, top: 0xfff8f5 },
-    "choco-bosque": { sponge: 0x3d2314, frost: 0x5c3a24, drip: 0x6b2e4a, top: 0x4a2c1a },
-    cheesecake: { sponge: 0xf0e6d0, frost: 0xfff8ee, drip: 0xc4a574, top: 0xffffff },
-    chocolate: { sponge: 0x3d2314, frost: 0x5c3a24, drip: 0x2a1810, top: 0x4a2c1a },
-    crema: { sponge: 0xf0e6d0, frost: 0xfff8ee, drip: 0xc4a574, top: 0xffffff }
+  var MODEL_BASE = "assets/models/cakes/";
+  var GLB_ENABLED = true;
+
+  function glbPathForTipo(tipo) {
+    return MODEL_BASE + encodeURIComponent(tipo) + ".glb";
+  }
+
+  var FROST = {
+    chocolate: 0x3d2414, blanco: 0xf8f4ec, crema: 0xf5e6d3, frutos: 0xa03d4a,
+    pistacho: 0x8fb86a, lotus: 0xd4a574, redvelvet: 0xf5f0eb, oreo: 0x2a2a2a,
+    ferrero: 0x6b4423, selva: 0xf5f0eb, natafresa: 0xfff5f7, matilda: 0x2d1810
   };
 
-  var SIZE_SCALE = { s: 0.75, m: 1.0, l: 1.25 };
+  var TYPE_PROFILE = {
+    matilda: { sponge: 0x4a2c1a, sponge2: 0x3d2414, frost: "matilda", crumbs: 0x2d1810, drip: true, dripColor: 0x2d1810 },
+    redvelvet: { sponge: 0x8b2e2e, sponge2: 0xa33a3a, frost: "redvelvet", crumbs: 0xf5f0eb, whiteFrost: true },
+    lotus: { sponge: 0xe8d5c4, sponge2: 0xd4b896, frost: "lotus", crumbs: 0xc4a484, drip: true, dripColor: 0xc4a070 },
+    oreo: { sponge: 0x3d3d3d, sponge2: 0x2a2a2a, frost: "oreo", crumbs: 0x1a1a1a },
+    "pistacho-frambuesa": { sponge: 0xc5d4a0, sponge2: 0xa8c97f, frost: "pistacho", crumbs: 0xe63946, fruit: "berry" },
+    ferrero: { sponge: 0xc4a484, sponge2: 0xa67c52, frost: "ferrero", crumbs: 0x5c3a21, drip: true, dripColor: 0x5c3a21 },
+    selva: { sponge: 0x4a2c1a, sponge2: 0x3d2414, frost: "selva", crumbs: 0xc41e3a, whiteFrost: true, fruit: "cherry" },
+    "nata-fresa": { sponge: 0xf0e0d0, sponge2: 0xe8d5c4, frost: "natafresa", crumbs: 0xe63946, fruit: "strawberry" },
+    "choco-bosque": { sponge: 0x5c3a21, sponge2: 0x3d2414, frost: "chocolate", crumbs: 0x6b2d5c, drip: true, dripColor: 0x3d2414, fruit: "berry" },
+    cheesecake: { sponge: 0xf5e6d3, sponge2: 0xe8d5c4, frost: "crema", crumbs: 0xd4a574, isCheesecake: true }
+  };
 
-  function mat(color, rough, metal) {
+  var configViewer = null;
+  var productViewer = null;
+  var configAnimId = null;
+  var productAnimId = null;
+
+  function mat(color, opts) {
+    opts = opts || {};
     return new THREE.MeshStandardMaterial({
       color: color,
-      roughness: rough != null ? rough : 0.55,
-      metalness: metal != null ? metal : 0.05
+      roughness: opts.rough != null ? opts.rough : 0.55,
+      metalness: opts.metal != null ? opts.metal : 0.04
     });
   }
 
   function disposeObject(obj) {
     if (!obj) return;
-    obj.traverse(function (c) {
-      if (c.geometry) c.geometry.dispose();
-      if (c.material) {
-        if (Array.isArray(c.material)) c.material.forEach(function (m) { m.dispose(); });
-        else c.material.dispose();
+    obj.traverse(function (child) {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach(function (m) {
+            if (m.map) m.map.dispose();
+            m.dispose();
+          });
+        } else {
+          if (child.material.map) child.material.map.dispose();
+          child.material.dispose();
+        }
       }
     });
   }
 
   function buildCake(opts) {
     opts = opts || {};
-    var tipo = opts.tipo || "matilda";
-    var size = opts.size || "m";
-    var frostKey = opts.frost || tipo;
-    var profile = TYPE_PROFILE[frostKey] || TYPE_PROFILE[tipo] || TYPE_PROFILE.matilda;
-    var scale = SIZE_SCALE[size] || 1;
     var group = new THREE.Group();
+    var scale = opts.size === "s" ? 0.72 : opts.size === "l" ? 1.22 : 1;
+    var tipo = opts.tipo || "matilda";
+    var profile = TYPE_PROFILE[tipo] || TYPE_PROFILE.matilda;
+    var frostKey = opts.frost || profile.frost;
+    var frostColor = FROST[frostKey] || FROST.chocolate;
 
     var plate = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.35 * scale, 1.4 * scale, 0.08, 48),
-      mat(0xe8e0d5, 0.7, 0.1)
+      new THREE.CylinderGeometry(1.65 * scale, 1.72 * scale, 0.08, 48),
+      mat(0xfaf6f1, { rough: 0.3 })
     );
-    plate.position.y = 0;
     plate.receiveShadow = true;
     group.add(plate);
 
-    var layerH = 0.42 * scale;
-    var r1 = 1.05 * scale;
-    var sponge1 = new THREE.Mesh(new THREE.CylinderGeometry(r1, r1, layerH, 48), mat(profile.sponge, 0.85, 0));
-    sponge1.position.y = 0.08 + layerH / 2;
-    sponge1.castShadow = true;
-    group.add(sponge1);
+    var layers;
+    if (profile.isCheesecake) {
+      layers = [
+        { y: 0.14 * scale, r: 1.2 * scale, h: 0.1 * scale, col: 0xc4a484 },
+        { y: 0.42 * scale, r: 1.15 * scale, h: 0.52 * scale, col: 0xf5e6d3 }
+      ];
+    } else {
+      layers = [
+        { y: 0.22 * scale, r: 1.18 * scale, h: 0.36 * scale, col: profile.sponge },
+        { y: 0.54 * scale, r: 1.08 * scale, h: 0.32 * scale, col: profile.sponge2 || profile.sponge },
+        { y: 0.82 * scale, r: 0.98 * scale, h: 0.28 * scale, col: profile.sponge }
+      ];
+    }
 
-    var frost1 = new THREE.Mesh(
-      new THREE.CylinderGeometry(r1 * 1.02, r1 * 1.02, layerH * 0.18, 48),
-      mat(profile.frost, 0.4, 0.02)
-    );
-    frost1.position.y = sponge1.position.y + layerH * 0.42;
-    group.add(frost1);
-
-    var r2 = 0.85 * scale;
-    var sponge2 = new THREE.Mesh(new THREE.CylinderGeometry(r2, r2, layerH, 48), mat(profile.sponge, 0.85, 0));
-    sponge2.position.y = frost1.position.y + layerH * 0.55;
-    sponge2.castShadow = true;
-    group.add(sponge2);
-
-    var frost2 = new THREE.Mesh(
-      new THREE.CylinderGeometry(r2 * 1.02, r2 * 1.02, layerH * 0.2, 48),
-      mat(profile.frost, 0.35, 0.02)
-    );
-    frost2.position.y = sponge2.position.y + layerH * 0.45;
-    group.add(frost2);
-
-    var topY = frost2.position.y + layerH * 0.15;
-    var top = new THREE.Mesh(new THREE.CylinderGeometry(r2 * 0.98, r2 * 0.98, 0.06 * scale, 48), mat(profile.top, 0.3, 0.05));
-    top.position.y = topY;
-    group.add(top);
-
-    // Drips
-    var dripMat = mat(profile.drip, 0.35, 0.08);
-    for (var i = 0; i < 10; i++) {
-      var ang = (i / 10) * Math.PI * 2 + 0.2;
-      var drip = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.04 * scale, 0.025 * scale, 0.28 * scale, 8),
-        dripMat
+    layers.forEach(function (L) {
+      var mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(L.r * 0.98, L.r, L.h, 48),
+        mat(L.col, { rough: 0.88 })
       );
-      drip.position.set(Math.cos(ang) * r2 * 0.92, topY - 0.08 * scale, Math.sin(ang) * r2 * 0.92);
-      drip.rotation.z = 0.15 * Math.sin(i);
-      group.add(drip);
-    }
+      mesh.position.y = L.y;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+      var frost = new THREE.Mesh(
+        new THREE.CylinderGeometry(L.r * 1.02, L.r * 1.02, L.h * 0.12, 48),
+        mat(frostColor, { rough: 0.4 })
+      );
+      frost.position.y = L.y + L.h * 0.4;
+      group.add(frost);
+    });
 
-    // Variety toppings
-    if (tipo === "oreo" || frostKey === "oreo") {
-      for (var o = 0; o < 5; o++) {
-        var cookie = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.04 * scale, 16),
-          mat(0x1a1a1a, 0.9, 0)
+    var topY = layers[layers.length - 1].y + layers[layers.length - 1].h * 0.5;
+    if (profile.drip) {
+      var dripMat = mat(profile.dripColor || frostColor, { rough: 0.35 });
+      for (var i = 0; i < 10; i++) {
+        var ang = (i / 10) * Math.PI * 2;
+        var drip = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.04 * scale, 0.02 * scale, 0.25 * scale, 8),
+          dripMat
         );
-        var a = (o / 5) * Math.PI * 2;
-        cookie.position.set(Math.cos(a) * 0.35 * scale, topY + 0.06 * scale, Math.sin(a) * 0.35 * scale);
-        group.add(cookie);
+        drip.position.set(Math.cos(ang) * 0.9 * scale, topY - 0.05 * scale, Math.sin(ang) * 0.9 * scale);
+        group.add(drip);
       }
     }
-    if (tipo.indexOf("pistacho") >= 0 || frostKey === "pistacho") {
-      for (var p = 0; p < 8; p++) {
-        var nut = new THREE.Mesh(new THREE.SphereGeometry(0.05 * scale, 8, 8), mat(0x6b8f4e, 0.6, 0));
-        var ap = (p / 8) * Math.PI * 2;
-        nut.position.set(Math.cos(ap) * 0.4 * scale, topY + 0.05 * scale, Math.sin(ap) * 0.4 * scale);
-        group.add(nut);
-      }
-    }
-    if (tipo.indexOf("fresa") >= 0 || tipo === "selva" || tipo === "nata-fresa") {
+    if (profile.fruit === "berry" || profile.fruit === "strawberry" || profile.fruit === "cherry") {
       for (var f = 0; f < 6; f++) {
-        var berry = new THREE.Mesh(new THREE.SphereGeometry(0.06 * scale, 8, 8), mat(0xc41e3a, 0.5, 0));
-        var af = (f / 6) * Math.PI * 2 + 0.3;
-        berry.position.set(Math.cos(af) * 0.38 * scale, topY + 0.07 * scale, Math.sin(af) * 0.38 * scale);
+        var berry = new THREE.Mesh(
+          new THREE.SphereGeometry(0.06 * scale, 8, 8),
+          mat(0xc41e3a, { rough: 0.5 })
+        );
+        var af = (f / 6) * Math.PI * 2;
+        berry.position.set(Math.cos(af) * 0.35 * scale, topY + 0.08 * scale, Math.sin(af) * 0.35 * scale);
         group.add(berry);
       }
     }
     if (opts.candles) {
       for (var c = 0; c < 3; c++) {
         var candle = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.025 * scale, 0.025 * scale, 0.22 * scale, 8),
-          mat(0xf5f0e6, 0.4, 0)
+          new THREE.CylinderGeometry(0.025 * scale, 0.025 * scale, 0.2 * scale, 8),
+          mat(0xf5f0e6, { rough: 0.4 })
         );
-        candle.position.set((c - 1) * 0.2 * scale, topY + 0.14 * scale, 0);
+        candle.position.set((c - 1) * 0.18 * scale, topY + 0.12 * scale, 0);
         group.add(candle);
-        var flame = new THREE.Mesh(new THREE.SphereGeometry(0.03 * scale, 6, 6), mat(0xffaa33, 0.3, 0.2));
-        flame.position.set((c - 1) * 0.2 * scale, topY + 0.28 * scale, 0);
-        group.add(flame);
       }
     }
-
-    group.userData = { tipo: tipo, size: size };
+    group.userData = { tipo: tipo, size: opts.size || "m", provisional: true };
     return group;
   }
 
@@ -150,12 +151,9 @@
     if (!el) return { w: 300, h: 260 };
     var w = el.clientWidth || el.offsetWidth;
     var h = el.clientHeight || el.offsetHeight;
-    if (w < 10) {
-      var parent = el.parentElement;
-      if (parent) {
-        w = parent.clientWidth || parent.offsetWidth || 300;
-        h = parent.clientHeight || parent.offsetHeight || 260;
-      }
+    if (w < 10 && el.parentElement) {
+      w = el.parentElement.clientWidth || 300;
+      h = el.parentElement.clientHeight || 260;
     }
     return { w: Math.max(w, 200), h: Math.max(h, 200) };
   }
@@ -171,13 +169,31 @@
       loading.textContent = "No se pudo cargar el 3D. La foto real es la referencia.";
     } else {
       loading.style.display = "flex";
-      loading.textContent = "Cargando modelo 3D…";
+      loading.textContent = "Cargando modelo 3D orientativo…";
     }
   }
 
-  var viewers = {};
+  function disposeViewer(v, isConfig) {
+    if (!v) return;
+    if (isConfig && configAnimId) {
+      cancelAnimationFrame(configAnimId);
+      configAnimId = null;
+    }
+    if (!isConfig && productAnimId) {
+      cancelAnimationFrame(productAnimId);
+      productAnimId = null;
+    }
+    if (v.cake) disposeObject(v.cake);
+    if (v.renderer) {
+      try { v.renderer.dispose(); } catch (e) {}
+      if (v.renderer.domElement && v.renderer.domElement.parentNode) {
+        v.renderer.domElement.parentNode.removeChild(v.renderer.domElement);
+      }
+    }
+    v.dead = true;
+  }
 
-  function setupViewer(canvasId, containerId, loadingId) {
+  function setupViewer(canvasId, containerId, isConfig) {
     if (typeof THREE === "undefined") return null;
     var canvasWrap = document.getElementById(canvasId);
     var container = document.getElementById(containerId) || (canvasWrap && canvasWrap.parentElement);
@@ -185,8 +201,6 @@
 
     var dims = measureContainer(container);
     var scene = new THREE.Scene();
-    scene.background = null;
-
     var camera = new THREE.PerspectiveCamera(42, dims.w / dims.h, 0.1, 100);
     camera.position.set(2.2, 1.8, 2.8);
     camera.lookAt(0, 0.6, 0);
@@ -198,8 +212,7 @@
     canvasWrap.innerHTML = "";
     canvasWrap.appendChild(renderer.domElement);
 
-    var ambient = new THREE.AmbientLight(0xfff5eb, 0.65);
-    scene.add(ambient);
+    scene.add(new THREE.AmbientLight(0xfff5eb, 0.65));
     var dir = new THREE.DirectionalLight(0xffffff, 0.85);
     dir.position.set(3, 5, 2);
     dir.castShadow = true;
@@ -208,69 +221,67 @@
     fill.position.set(-2, 2, -1);
     scene.add(fill);
 
-    var cakeGroup = null;
-    var rotY = 0.35, rotX = 0.15;
-    var dragging = false, lastX = 0, lastY = 0;
-    var pinchDist = 0;
-    var zoom = 1;
+    var state = {
+      container: container,
+      cake: null,
+      renderer: renderer,
+      camera: camera,
+      scene: scene,
+      rotY: 0.35,
+      rotX: 0.15,
+      zoom: 1,
+      dragging: false,
+      lastX: 0,
+      lastY: 0,
+      dead: false,
+      opts: { tipo: "matilda", size: "m" }
+    };
 
     function renderCake(opts) {
-      if (cakeGroup) {
-        scene.remove(cakeGroup);
-        disposeObject(cakeGroup);
+      state.opts = opts || state.opts;
+      if (state.cake) {
+        scene.remove(state.cake);
+        disposeObject(state.cake);
       }
-      cakeGroup = buildCake(opts);
-      scene.add(cakeGroup);
+      /* GLB: cuando existan archivos en MODEL_BASE; por ahora solo procedural */
+      state.cake = buildCake(state.opts);
+      scene.add(state.cake);
       setViewerState(container, "ready");
     }
 
     function animate() {
-      var id = canvasId;
-      if (!viewers[id] || viewers[id].dead) return;
-      requestAnimationFrame(animate);
-      if (cakeGroup) {
-        cakeGroup.rotation.y = rotY;
-        cakeGroup.rotation.x = rotX;
+      if (state.dead) return;
+      var id = requestAnimationFrame(animate);
+      if (isConfig) configAnimId = id;
+      else productAnimId = id;
+      if (state.cake) {
+        state.cake.rotation.y = state.rotY;
+        state.cake.rotation.x = state.rotX;
       }
-      camera.position.set(2.2 * zoom, 1.8 * zoom, 2.8 * zoom);
-      camera.lookAt(0, 0.55 * (SIZE_SCALE[(opts && opts.size) || "m"] || 1), 0);
+      camera.position.set(2.2 * state.zoom, 1.8 * state.zoom, 2.8 * state.zoom);
+      camera.lookAt(0, 0.55, 0);
       renderer.render(scene, camera);
     }
-    var opts = { tipo: "matilda", size: "m" };
 
     var el = renderer.domElement;
     el.addEventListener("pointerdown", function (e) {
-      dragging = true; lastX = e.clientX; lastY = e.clientY; el.setPointerCapture(e.pointerId);
+      state.dragging = true;
+      state.lastX = e.clientX;
+      state.lastY = e.clientY;
+      el.setPointerCapture(e.pointerId);
     });
     el.addEventListener("pointermove", function (e) {
-      if (!dragging) return;
-      rotY += (e.clientX - lastX) * 0.01;
-      rotX = Math.max(-0.4, Math.min(0.6, rotX + (e.clientY - lastY) * 0.008));
-      lastX = e.clientX; lastY = e.clientY;
+      if (!state.dragging) return;
+      state.rotY += (e.clientX - state.lastX) * 0.01;
+      state.rotX = Math.max(-0.4, Math.min(0.6, state.rotX + (e.clientY - state.lastY) * 0.008));
+      state.lastX = e.clientX;
+      state.lastY = e.clientY;
     });
-    el.addEventListener("pointerup", function () { dragging = false; });
-    el.addEventListener("pointercancel", function () { dragging = false; });
+    el.addEventListener("pointerup", function () { state.dragging = false; });
     el.addEventListener("wheel", function (e) {
       e.preventDefault();
-      zoom = Math.max(0.6, Math.min(1.8, zoom + e.deltaY * 0.001));
+      state.zoom = Math.max(0.6, Math.min(1.8, state.zoom + e.deltaY * 0.001));
     }, { passive: false });
-
-    el.addEventListener("touchstart", function (e) {
-      if (e.touches.length === 2) {
-        var dx = e.touches[0].clientX - e.touches[1].clientX;
-        var dy = e.touches[0].clientY - e.touches[1].clientY;
-        pinchDist = Math.sqrt(dx * dx + dy * dy);
-      }
-    }, { passive: true });
-    el.addEventListener("touchmove", function (e) {
-      if (e.touches.length === 2) {
-        var dx = e.touches[0].clientX - e.touches[1].clientX;
-        var dy = e.touches[0].clientY - e.touches[1].clientY;
-        var d = Math.sqrt(dx * dx + dy * dy);
-        if (pinchDist > 0) zoom = Math.max(0.6, Math.min(1.8, zoom * (pinchDist / d)));
-        pinchDist = d;
-      }
-    }, { passive: true });
 
     function onResize() {
       var d = measureContainer(container);
@@ -279,60 +290,58 @@
       renderer.setSize(d.w, d.h);
     }
     window.addEventListener("resize", onResize);
+    state._onResize = onResize;
 
-    var api = {
-      update: function (o) { opts = o || opts; renderCake(opts); },
-      resetCamera: function () { rotY = 0.35; rotX = 0.15; zoom = 1; },
-      dispose: function () {
-        api.dead = true;
-        window.removeEventListener("resize", onResize);
-        if (cakeGroup) disposeObject(cakeGroup);
-        renderer.dispose();
-        if (renderer.domElement && renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
-      },
-      dead: false
+    state.update = function (o) { renderCake(o); };
+    state.resetCamera = function () {
+      state.rotY = 0.35;
+      state.rotX = 0.15;
+      state.zoom = 1;
     };
-    viewers[canvasId] = api;
-    renderCake(opts);
+    state.dispose = function () {
+      state.dead = true;
+      window.removeEventListener("resize", onResize);
+      disposeViewer(state, isConfig);
+    };
+
+    renderCake(state.opts);
     animate();
-    return api;
+    return state;
   }
 
   function waitForThree(cb, tries) {
     tries = tries || 0;
-    if (typeof THREE !== "undefined") { cb(); return; }
-    if (tries > 40) {
-      console.warn("Three.js no cargó");
+    if (typeof THREE !== "undefined") {
+      cb();
       return;
     }
+    if (tries > 40) return;
     setTimeout(function () { waitForThree(cb, tries + 1); }, 150);
   }
-
-  var configApi = null;
-  var productApi = null;
 
   function initConfig3D(opts) {
     waitForThree(function () {
       var container = document.getElementById("config-3d-viewer");
       setViewerState(container, "loading");
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          try {
-            if (configApi) { configApi.update(opts); return; }
-            configApi = setupViewer("config-3d-canvas", "config-3d-viewer");
-            if (configApi && opts) configApi.update(opts);
-            else if (!configApi) setViewerState(container, "error");
-          } catch (e) {
-            console.error(e);
-            setViewerState(container, "error");
+        try {
+          if (configViewer) {
+            configViewer.update(opts);
+            return;
           }
-        });
+          configViewer = setupViewer("config-3d-canvas", "config-3d-viewer", true);
+          if (configViewer && opts) configViewer.update(opts);
+          else if (!configViewer) setViewerState(container, "error");
+        } catch (e) {
+          console.error(e);
+          setViewerState(container, "error");
+        }
       });
     });
   }
 
   function updateConfig3D(opts) {
-    if (configApi) configApi.update(opts);
+    if (configViewer && !configViewer.dead) configViewer.update(opts);
     else initConfig3D(opts);
   }
 
@@ -361,9 +370,9 @@
       setViewerState(container, "loading");
       requestAnimationFrame(function () {
         try {
-          if (productApi) productApi.dispose();
-          productApi = setupViewer("product-3d-canvas", "product-3d-viewer");
-          if (productApi) productApi.update({ tipo: tipo, size: "m" });
+          if (productViewer) productViewer.dispose();
+          productViewer = setupViewer("product-3d-canvas", "product-3d-viewer", false);
+          if (productViewer) productViewer.update({ tipo: tipo, size: "m" });
           else setViewerState(container, "error");
         } catch (e) {
           setViewerState(container, "error");
@@ -376,19 +385,31 @@
     var overlay = document.getElementById("modal-3d-overlay");
     if (overlay) overlay.classList.remove("open");
     document.body.style.overflow = "";
-    if (productApi) { productApi.dispose(); productApi = null; }
+    if (productViewer) {
+      productViewer.dispose();
+      productViewer = null;
+    }
   }
 
   function resetCamera() {
-    if (configApi) configApi.resetCamera();
+    if (configViewer) configViewer.resetCamera();
   }
 
-  global.Cake3D = {
+  function destroyConfig() {
+    if (configViewer) {
+      configViewer.dispose();
+      configViewer = null;
+    }
+  }
+
+  return {
     initConfig3D: initConfig3D,
     updateConfig3D: updateConfig3D,
     openProduct3D: openProduct3D,
     closeProduct3D: closeProduct3D,
     resetCamera: resetCamera,
-    buildCake: buildCake
+    destroyConfig: destroyConfig,
+    buildCake: buildCake,
+    glbPathForTipo: glbPathForTipo
   };
-})(typeof window !== "undefined" ? window : this);
+})();
